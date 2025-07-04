@@ -1,181 +1,44 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useSavedJobs } from '@/hooks/useSavedJobs';
 import { Job } from '@/types/jobs';
 import Image from 'next/image';
 import {
-  Search,
   MapPin,
   Bookmark,
   ChevronRight,
   ArrowLeft,
+  BookmarkX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useSavedJobs } from '@/hooks/useSavedJobs';
-import { fetchJobs } from '@/lib/api/jobs';
-import JobCardSkeleton from './JobCardSkeleton';
 
-interface JobListingsProps {
-  initialJobs: Job[];
-  initialSelectedJob: Job | null;
-  searchQuery?: string;
-}
-
-export default function JobListings({
-  initialJobs,
-  initialSelectedJob,
-  searchQuery = 'frontend developer',
-}: JobListingsProps) {
-  const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>(initialJobs);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(
-    initialSelectedJob
-  );
+export default function SavedJobsPage() {
+  const { savedJobs, toggleSaveJob, isLoading } = useSavedJobs();
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [searchInput, setSearchInput] = useState(searchQuery);
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const { isJobSaved, toggleSaveJob } = useSavedJobs();
-
-  const loadMoreJobs = useCallback(async () => {
-    if (isLoading || !hasMore) return;
-
-    setIsLoading(true);
-
-    try {
-      const nextPage = currentPage + 1;
-      const newJobsData = await fetchJobs({
-        query: searchInput,
-        page: nextPage,
-      });
-
-      if (
-        newJobsData &&
-        newJobsData.status === 'OK' &&
-        newJobsData.data.length > 0
-      ) {
-        // Filter out duplicate jobs based on job_id
-        const uniqueNewJobs = newJobsData.data.filter(
-          (newJob) =>
-            !jobs.some((existingJob) => existingJob.job_id === newJob.job_id)
-        );
-
-        if (uniqueNewJobs.length > 0) {
-          setJobs((prevJobs) => {
-            const updatedJobs = [...prevJobs, ...uniqueNewJobs];
-            return updatedJobs;
-          });
-          setCurrentPage(nextPage);
-        } else {
-          setHasMore(false);
-        }
-
-        // If we get fewer than expected results, there might not be more pages
-        if (newJobsData.data.length < 10) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error('Error loading more jobs:', error);
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, searchInput, jobs, isLoading, hasMore]);
-
-  const { isFetching, containerRef } = useInfiniteScroll({
-    hasMore,
-    isLoading,
-    onLoadMore: loadMoreJobs,
-    threshold: 300,
-  });
-
-  const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim()) return;
-
-    setIsLoading(true);
-    setJobs([]);
-    setCurrentPage(1);
-    setHasMore(true);
-    setSelectedJob(null);
-
-    try {
-      const jobsData = await fetchJobs({
-        query: query.trim(),
-        page: 1,
-      });
-
-      if (jobsData && jobsData.status === 'OK') {
-        setJobs(jobsData.data);
-        if (jobsData.data.length > 0) {
-          setSelectedJob(jobsData.data[0]);
-        }
-        setHasMore(jobsData.data.length >= 10);
-      }
-    } catch (error) {
-      console.error('Error searching jobs:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSearch(searchInput);
-  };
-
-  // Filter jobs based on active filters
-  const applyFilters = useCallback(
-    (jobsToFilter: Job[]) => {
-      if (activeFilters.length === 0) {
-        return jobsToFilter;
-      }
-
-      return jobsToFilter.filter((job) => {
-        return activeFilters.every((filter) => {
-          switch (filter) {
-            case 'remote':
-              return job.job_is_remote === true;
-            case 'full-time':
-              return (
-                job.job_employment_type?.toLowerCase().includes('fulltime') ||
-                job.job_employment_type?.toLowerCase().includes('full-time')
-              );
-            case 'part-time':
-              return (
-                job.job_employment_type?.toLowerCase().includes('parttime') ||
-                job.job_employment_type?.toLowerCase().includes('part-time')
-              );
-            default:
-              return true;
-          }
-        });
-      });
-    },
-    [activeFilters]
-  );
-
-  // Update filtered jobs when jobs or activeFilters change
+  // Clear selected job if it's no longer in saved jobs
   useEffect(() => {
-    const filtered = applyFilters(jobs);
-    setFilteredJobs(filtered);
-  }, [jobs, applyFilters]);
+    if (
+      selectedJob &&
+      !savedJobs.some((job) => job.job_id === selectedJob.job_id)
+    ) {
+      setSelectedJob(null);
+      setShowJobDetails(false);
+    }
+  }, [savedJobs, selectedJob]);
 
-  const toggleFilter = (filter: string) => {
-    setActiveFilters((prev) => {
-      const newFilters = prev.includes(filter)
-        ? prev.filter((f) => f !== filter)
-        : [...prev, filter];
-      return newFilters;
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground text-lg">Loading saved jobs...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col xl:flex-row">
@@ -195,83 +58,49 @@ export default function JobListings({
           <h1 className="text-foreground text-lg font-semibold">
             {showJobDetails && selectedJob
               ? selectedJob.job_title
-              : 'Job Search'}
+              : 'Saved Jobs'}
           </h1>
         </div>
       </div>
 
-      {/* Left Panel - Job Search */}
+      {/* Left Panel - Saved Jobs List */}
       <div
         className={`bg-background flex w-full flex-col p-4 xl:w-2/3 xl:p-6 ${showJobDetails ? 'hidden xl:flex' : 'flex'}`}
       >
-        {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="relative mb-4 xl:mb-6">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform xl:h-5 xl:w-5" />
-          <input
-            type="text"
-            placeholder="Designer, USA"
-            className="border-border bg-background text-foreground focus:ring-ring w-full rounded-lg border py-2.5 pr-16 pl-10 text-sm focus:ring-2 focus:outline-none xl:py-3 xl:pr-4 xl:text-base"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Search jobs"
-          />
-        </form>
-
-        {/* Filter Buttons */}
-        <div className="mb-4 xl:mb-6">
-          <p className="text-foreground mb-3 text-sm font-medium">Filters:</p>
-          <div
-            className="flex flex-wrap gap-2 xl:gap-3"
-            role="group"
-            aria-label="Job filters"
-          >
-            <Button
-              variant={activeFilters.includes('remote') ? 'default' : 'outline'}
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
-              onClick={() => toggleFilter('remote')}
-            >
-              <span>Remote</span>
-            </Button>
-            <Button
-              variant={
-                activeFilters.includes('full-time') ? 'default' : 'outline'
-              }
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
-              onClick={() => toggleFilter('full-time')}
-            >
-              <span>Full-time</span>
-            </Button>
-            <Button
-              variant={
-                activeFilters.includes('part-time') ? 'default' : 'outline'
-              }
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
-              onClick={() => toggleFilter('part-time')}
-            >
-              <span>Part-time</span>
-            </Button>
-          </div>
+        {/* Desktop header - hidden on mobile when no job details */}
+        <div
+          className={`mb-6 ${showJobDetails ? 'hidden xl:block' : 'hidden xl:block'}`}
+        >
+          <h1 className="text-foreground text-2xl font-bold">Saved Jobs</h1>
+          <p className="text-muted-foreground text-sm">
+            {savedJobs.length} {savedJobs.length === 1 ? 'job' : 'jobs'} saved
+          </p>
         </div>
 
-        {/* Job Listings */}
-        <div ref={containerRef} className="flex-1 overflow-y-auto">
-          {filteredJobs.length === 0 && !isLoading ? (
+        {/* Mobile-optimized subtitle - only show count */}
+        <div className="mb-4 xl:hidden">
+          <p className="text-muted-foreground text-sm">
+            {savedJobs.length} {savedJobs.length === 1 ? 'job' : 'jobs'} saved
+          </p>
+        </div>
+
+        {/* Saved Jobs List */}
+        <div className="flex-1 overflow-y-auto">
+          {savedJobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="bg-muted mb-4 rounded-full p-4">
+                <BookmarkX className="text-muted-foreground h-8 w-8" />
+              </div>
               <p className="text-muted-foreground mb-2 text-lg">
-                {jobs.length === 0
-                  ? 'No jobs found'
-                  : 'No jobs match your filters'}
+                No saved jobs yet
               </p>
               <p className="text-muted-foreground text-sm">
-                {jobs.length === 0
-                  ? 'Try adjusting your search criteria'
-                  : 'Try removing some filters or adjusting your search'}
+                Save jobs while browsing to view them here
               </p>
             </div>
           ) : (
             <div className="space-y-3 xl:space-y-4">
-              {/* Job listings and skeletons */}
-              {filteredJobs.map((job) => (
+              {savedJobs.map((job) => (
                 <button
                   key={job.job_id}
                   className={`w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-300 xl:p-4 ${
@@ -281,8 +110,8 @@ export default function JobListings({
                   }`}
                   onClick={() => {
                     setSelectedJob(job);
-                    setShowJobDetails(true); // Show details on mobile
-                    setIsDescriptionExpanded(false); // Reset description state
+                    setShowJobDetails(true);
+                    setIsDescriptionExpanded(false);
                   }}
                 >
                   <div className="flex items-center gap-3 xl:gap-4">
@@ -303,10 +132,9 @@ export default function JobListings({
                       )}
                     </div>
 
-                    {/* Job Details - Mobile: Stack vertically, Desktop: Row */}
+                    {/* Job Details */}
                     <div className="min-w-0 flex-1">
                       <div className="xl:flex xl:items-center xl:gap-4">
-                        {/* Job Details - Left Column */}
                         <div className="mb-2 min-w-0 flex-1 xl:mb-0">
                           <h3 className="text-foreground text-sm font-semibold xl:text-sm">
                             {job.job_title}
@@ -316,7 +144,6 @@ export default function JobListings({
                           </p>
                         </div>
 
-                        {/* Location - Middle Column (Hidden on mobile) */}
                         <div className="hidden min-w-0 xl:block xl:w-48">
                           <p className="text-foreground text-sm font-medium">
                             {job.job_city}, {job.job_state}
@@ -326,7 +153,6 @@ export default function JobListings({
                           </p>
                         </div>
 
-                        {/* Salary - Right Column */}
                         <div className="flex-shrink-0 xl:w-32 xl:text-right">
                           <p className="text-foreground text-sm font-semibold">
                             {job.job_min_salary && job.job_max_salary
@@ -339,7 +165,6 @@ export default function JobListings({
                         </div>
                       </div>
 
-                      {/* Mobile: Show location below */}
                       <div className="text-muted-foreground mt-2 flex items-center gap-1 xl:hidden">
                         <MapPin className="h-3 w-3" />
                         <span className="text-xs">
@@ -348,31 +173,12 @@ export default function JobListings({
                       </div>
                     </div>
 
-                    {/* Mobile: Chevron indicator */}
                     <div className="xl:hidden">
                       <ChevronRight className="text-muted-foreground h-4 w-4" />
                     </div>
                   </div>
                 </button>
               ))}
-
-              {/* Loading Skeletons */}
-              {(isLoading || isFetching) && hasMore && (
-                <>
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <JobCardSkeleton key={`skeleton-${index}`} />
-                  ))}
-                </>
-              )}
-
-              {/* No more jobs indicator */}
-              {!hasMore && filteredJobs.length > 0 && (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    No more jobs to load
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -418,23 +224,11 @@ export default function JobListings({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`focus:ring-ring flex-shrink-0 border-none p-2 transition-colors duration-200 focus:ring-2 ${
-                    isJobSaved(selectedJob.job_id)
-                      ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/20 dark:hover:text-amber-300'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
+                  className="focus:ring-ring flex-shrink-0 border-none p-2 text-amber-600 transition-colors duration-200 hover:bg-amber-50 hover:text-amber-700 focus:ring-2 dark:text-amber-400 dark:hover:bg-amber-950/20 dark:hover:text-amber-300"
                   onClick={() => toggleSaveJob(selectedJob)}
-                  aria-label={
-                    isJobSaved(selectedJob.job_id)
-                      ? 'Remove from saved jobs'
-                      : 'Save this job'
-                  }
+                  aria-label="Remove from saved jobs"
                 >
-                  <Bookmark
-                    className={`h-4 w-4 transition-all duration-200 ${
-                      isJobSaved(selectedJob.job_id) ? 'fill-current' : ''
-                    }`}
-                  />
+                  <Bookmark className="h-4 w-4 fill-current transition-all duration-200" />
                 </Button>
               </div>
               <div className="text-muted-foreground flex items-center gap-1">
@@ -471,7 +265,7 @@ export default function JobListings({
 
             <hr className="border-border mb-4 xl:mb-6" />
 
-            {/* Job Highlights*/}
+            {/* Job Highlights */}
             <div className="mb-4 flex-1 xl:mb-6">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-foreground font-semibold">
@@ -535,34 +329,12 @@ export default function JobListings({
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              {filteredJobs.length === 0 && jobs.length > 0 && !isLoading ? (
-                <>
-                  <p className="text-muted-foreground mb-2 text-lg">
-                    No jobs match your filters
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Try removing some filters to see more results
-                  </p>
-                </>
-              ) : jobs.length === 0 && !isLoading ? (
-                <>
-                  <p className="text-muted-foreground mb-2 text-lg">
-                    No jobs found
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Try searching for different keywords above
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-muted-foreground mb-2 text-lg">
-                    Select a job
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Choose a job from the list to view details
-                  </p>
-                </>
-              )}
+              <p className="text-muted-foreground mb-2 text-lg">
+                Select a saved job
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Choose a job from the list to view details
+              </p>
             </div>
           </div>
         )}

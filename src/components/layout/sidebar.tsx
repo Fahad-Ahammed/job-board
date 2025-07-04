@@ -14,6 +14,7 @@ import {
   Briefcase,
   Menu,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/theme/mode-toggle';
@@ -76,6 +77,7 @@ export function Sidebar() {
     { href: '/', icon: Home, label: 'Dashboard' },
     { href: '/jobs', icon: Search, label: 'Find Jobs' },
     { href: '/companies', icon: Building, label: 'Companies' },
+    { href: '/saved-jobs', icon: Bookmark, label: 'Saved Jobs' },
     { href: '/applications', icon: Briefcase, label: 'My Applications' },
     { href: '/analytics', icon: DollarSign, label: 'Analytics' },
   ];
@@ -116,7 +118,9 @@ export function Sidebar() {
             asChild
             variant={
               pathname === link.href ||
-              (link.href === '/jobs' && pathname.startsWith('/jobs'))
+              (link.href === '/jobs' && pathname.startsWith('/jobs')) ||
+              (link.href === '/saved-jobs' &&
+                pathname.startsWith('/saved-jobs'))
                 ? 'secondary'
                 : 'ghost'
             }
@@ -139,13 +143,13 @@ export function Sidebar() {
                   variant="outline"
                   className="bg-muted/30 hover:bg-muted/50 border-border flex h-16 flex-col items-center justify-center gap-2"
                 >
-                  <Bookmark
+                  <HelpCircle
                     size={20}
                     className="text-muted-foreground size-[18px]"
                   />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Saved Jobs</TooltipContent>
+              <TooltipContent>Help & Support</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <div className="relative" data-settings-dropdown>
