@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Job } from '@/types/jobs';
 import Image from 'next/image';
 import {
@@ -27,6 +27,7 @@ export default function JobListings({
   searchQuery = 'frontend developer',
 }: JobListingsProps) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>(initialJobs);
   const [selectedJob, setSelectedJob] = useState<Job | null>(
     initialSelectedJob
   );
@@ -35,6 +36,7 @@ export default function JobListings({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState(searchQuery);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const loadMoreJobs = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -60,7 +62,10 @@ export default function JobListings({
         );
 
         if (uniqueNewJobs.length > 0) {
-          setJobs((prevJobs) => [...prevJobs, ...uniqueNewJobs]);
+          setJobs((prevJobs) => {
+            const updatedJobs = [...prevJobs, ...uniqueNewJobs];
+            return updatedJobs;
+          });
           setCurrentPage(nextPage);
         } else {
           setHasMore(false);
@@ -122,6 +127,52 @@ export default function JobListings({
     handleSearch(searchInput);
   };
 
+  // Filter jobs based on active filters
+  const applyFilters = useCallback(
+    (jobsToFilter: Job[]) => {
+      if (activeFilters.length === 0) {
+        return jobsToFilter;
+      }
+
+      return jobsToFilter.filter((job) => {
+        return activeFilters.every((filter) => {
+          switch (filter) {
+            case 'remote':
+              return job.job_is_remote === true;
+            case 'full-time':
+              return (
+                job.job_employment_type?.toLowerCase().includes('fulltime') ||
+                job.job_employment_type?.toLowerCase().includes('full-time')
+              );
+            case 'part-time':
+              return (
+                job.job_employment_type?.toLowerCase().includes('parttime') ||
+                job.job_employment_type?.toLowerCase().includes('part-time')
+              );
+            default:
+              return true;
+          }
+        });
+      });
+    },
+    [activeFilters]
+  );
+
+  // Update filtered jobs when jobs or activeFilters change
+  useEffect(() => {
+    const filtered = applyFilters(jobs);
+    setFilteredJobs(filtered);
+  }, [jobs, applyFilters]);
+
+  const toggleFilter = (filter: string) => {
+    setActiveFilters((prev) => {
+      const newFilters = prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
+        : [...prev, filter];
+      return newFilters;
+    });
+  };
+
   return (
     <div className="flex h-screen flex-col lg:flex-row">
       {/* Mobile Header - Only visible on mobile */}
@@ -163,43 +214,60 @@ export default function JobListings({
         </form>
 
         {/* Filter Buttons */}
-        <div
-          className="mb-4 flex flex-wrap gap-2 lg:mb-6 lg:gap-4"
-          role="group"
-          aria-label="Job filters"
-        >
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-6 lg:text-sm">
-            <span>Category</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-6 lg:text-sm"
+        <div className="mb-4 lg:mb-6">
+          <p className="text-foreground mb-3 text-sm font-medium">Filters:</p>
+          <div
+            className="flex flex-wrap gap-2 lg:gap-3"
+            role="group"
+            aria-label="Job filters"
           >
-            <span>Location</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-6 lg:text-sm"
-          >
-            <span>Salary</span>
-          </Button>
+            <Button
+              variant={activeFilters.includes('remote') ? 'default' : 'outline'}
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              onClick={() => toggleFilter('remote')}
+            >
+              <span>Remote</span>
+            </Button>
+            <Button
+              variant={
+                activeFilters.includes('full-time') ? 'default' : 'outline'
+              }
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              onClick={() => toggleFilter('full-time')}
+            >
+              <span>Full-time</span>
+            </Button>
+            <Button
+              variant={
+                activeFilters.includes('part-time') ? 'default' : 'outline'
+              }
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              onClick={() => toggleFilter('part-time')}
+            >
+              <span>Part-time</span>
+            </Button>
+          </div>
         </div>
 
         {/* Job Listings */}
         <div ref={containerRef} className="flex-1 overflow-y-auto">
-          {jobs.length === 0 && !isLoading ? (
+          {filteredJobs.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-2 text-lg">
-                No jobs found
+                {jobs.length === 0
+                  ? 'No jobs found'
+                  : 'No jobs match your filters'}
               </p>
               <p className="text-muted-foreground text-sm">
-                Try adjusting your search criteria
+                {jobs.length === 0
+                  ? 'Try adjusting your search criteria'
+                  : 'Try removing some filters or adjusting your search'}
               </p>
             </div>
           ) : (
             <div className="space-y-3 lg:space-y-4">
               {/* Job listings and skeletons */}
-              {jobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <button
                   key={job.job_id}
                   className={`w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-300 lg:p-4 ${
@@ -293,7 +361,7 @@ export default function JobListings({
               )}
 
               {/* No more jobs indicator */}
-              {!hasMore && jobs.length > 0 && (
+              {!hasMore && filteredJobs.length > 0 && (
                 <div className="py-8 text-center">
                   <p className="text-muted-foreground text-sm">
                     No more jobs to load
@@ -438,7 +506,16 @@ export default function JobListings({
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              {jobs.length === 0 && !isLoading ? (
+              {filteredJobs.length === 0 && jobs.length > 0 && !isLoading ? (
+                <>
+                  <p className="text-muted-foreground mb-2 text-lg">
+                    No jobs match your filters
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Try removing some filters to see more results
+                  </p>
+                </>
+              ) : jobs.length === 0 && !isLoading ? (
                 <>
                   <p className="text-muted-foreground mb-2 text-lg">
                     No jobs found
