@@ -27,21 +27,6 @@ export default function JobListings({
   );
   const [showJobDetails, setShowJobDetails] = useState(false);
 
-  const getCompanyIcon = (logo: string | null) => {
-    if (logo) {
-      return <Image src={logo} alt="company logo" width={40} height={40} />;
-    }
-    const logoMap: { [key: string]: string } = {
-      google: 'G',
-      facebook: 'F',
-      apple: 'A',
-      spotify: 'S',
-      tinder: 'T',
-      dropbox: 'D',
-    };
-    return logoMap[logo || ''] || '🏢';
-  };
-
   if (!selectedJob) {
     return <div>No jobs found.</div>;
   }
@@ -128,7 +113,16 @@ export default function JobListings({
                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-lg lg:text-xl"
                     aria-hidden="true"
                   >
-                    {getCompanyIcon(job.employer_logo)}
+                    {job.employer_logo ? (
+                      <Image
+                        src={job.employer_logo}
+                        alt="company logo"
+                        width={40}
+                        height={40}
+                      />
+                    ) : (
+                      '🏢'
+                    )}
                   </div>
 
                   {/* Job Details - Mobile: Stack vertically, Desktop: Row */}
@@ -197,7 +191,16 @@ export default function JobListings({
             className="bg-muted mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg text-2xl lg:h-16 lg:w-16 lg:text-3xl"
             aria-hidden="true"
           >
-            {getCompanyIcon(selectedJob.employer_logo)}
+            {selectedJob.employer_logo ? (
+              <Image
+                src={selectedJob.employer_logo}
+                alt="company logo"
+                width={40}
+                height={40}
+              />
+            ) : (
+              '🏢'
+            )}
           </div>
           <h2 className="text-foreground text-lg font-bold lg:text-xl">
             {selectedJob.employer_name}
