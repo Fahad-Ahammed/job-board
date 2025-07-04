@@ -263,7 +263,7 @@ export function Sidebar() {
 
       {/* Desktop Sidebar */}
       <aside
-        className="bg-background border-border hidden h-screen w-64 max-w-[250px] flex-col border-r shadow-sm md:flex"
+        className="bg-background border-border fixed top-0 left-0 z-30 hidden h-screen w-64 max-w-[250px] flex-col border-r shadow-sm md:flex"
         role="navigation"
         aria-label="Main navigation"
       >

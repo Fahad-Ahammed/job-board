@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${poppins.className} flex antialiased`}>
+      <body className={`${poppins.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -32,7 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Sidebar />
-          <main className="flex-1 p-4 pt-20 transition-all duration-300 md:p-8 md:pt-8">
+          <main className="min-h-screen pt-16 md:ml-[250px] md:pt-0">
             {children}
           </main>
         </ThemeProvider>
