@@ -174,9 +174,9 @@ export default function JobListings({
   };
 
   return (
-    <div className="flex h-screen flex-col lg:flex-row">
+    <div className="flex h-screen flex-col xl:flex-row">
       {/* Mobile Header - Only visible on mobile */}
-      <div className="bg-background border-border border-b p-4 lg:hidden">
+      <div className="bg-background border-border border-b p-4 xl:hidden">
         <div className="flex items-center gap-3">
           {showJobDetails && (
             <Button
@@ -198,15 +198,15 @@ export default function JobListings({
 
       {/* Left Panel - Job Search */}
       <div
-        className={`bg-background flex w-full flex-col p-4 lg:w-2/3 lg:p-6 ${showJobDetails ? 'hidden lg:flex' : 'flex'}`}
+        className={`bg-background flex w-full flex-col p-4 xl:w-2/3 xl:p-6 ${showJobDetails ? 'hidden xl:flex' : 'flex'}`}
       >
         {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="relative mb-4 lg:mb-6">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform lg:h-5 lg:w-5" />
+        <form onSubmit={handleSearchSubmit} className="relative mb-4 xl:mb-6">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform xl:h-5 xl:w-5" />
           <input
             type="text"
             placeholder="Designer, USA"
-            className="border-border bg-background text-foreground focus:ring-ring w-full rounded-lg border py-2.5 pr-16 pl-10 text-sm focus:ring-2 focus:outline-none lg:py-3 lg:pr-4 lg:text-base"
+            className="border-border bg-background text-foreground focus:ring-ring w-full rounded-lg border py-2.5 pr-16 pl-10 text-sm focus:ring-2 focus:outline-none xl:py-3 xl:pr-4 xl:text-base"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             aria-label="Search jobs"
@@ -214,16 +214,16 @@ export default function JobListings({
         </form>
 
         {/* Filter Buttons */}
-        <div className="mb-4 lg:mb-6">
+        <div className="mb-4 xl:mb-6">
           <p className="text-foreground mb-3 text-sm font-medium">Filters:</p>
           <div
-            className="flex flex-wrap gap-2 lg:gap-3"
+            className="flex flex-wrap gap-2 xl:gap-3"
             role="group"
             aria-label="Job filters"
           >
             <Button
               variant={activeFilters.includes('remote') ? 'default' : 'outline'}
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
               onClick={() => toggleFilter('remote')}
             >
               <span>Remote</span>
@@ -232,7 +232,7 @@ export default function JobListings({
               variant={
                 activeFilters.includes('full-time') ? 'default' : 'outline'
               }
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
               onClick={() => toggleFilter('full-time')}
             >
               <span>Full-time</span>
@@ -241,7 +241,7 @@ export default function JobListings({
               variant={
                 activeFilters.includes('part-time') ? 'default' : 'outline'
               }
-              className="cursor-pointer rounded-lg px-3 py-2 text-xs lg:px-4 lg:text-sm"
+              className="cursor-pointer rounded-lg px-3 py-2 text-xs xl:px-4 xl:text-sm"
               onClick={() => toggleFilter('part-time')}
             >
               <span>Part-time</span>
@@ -265,12 +265,12 @@ export default function JobListings({
               </p>
             </div>
           ) : (
-            <div className="space-y-3 lg:space-y-4">
+            <div className="space-y-3 xl:space-y-4">
               {/* Job listings and skeletons */}
               {filteredJobs.map((job) => (
                 <button
                   key={job.job_id}
-                  className={`w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-300 lg:p-4 ${
+                  className={`w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-300 xl:p-4 ${
                     selectedJob?.job_id === job.job_id
                       ? 'border-primary/30 bg-muted/60 dark:bg-muted/10'
                       : 'hover:border-primary/30 dark:hover:border-primary/40 bg-card'
@@ -280,10 +280,10 @@ export default function JobListings({
                     setShowJobDetails(true); // Show details on mobile
                   }}
                 >
-                  <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="flex items-center gap-3 xl:gap-4">
                     {/* Company Logo */}
                     <div
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-lg lg:text-xl"
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-lg xl:text-xl"
                       aria-hidden="true"
                     >
                       {job.employer_logo ? (
@@ -300,10 +300,10 @@ export default function JobListings({
 
                     {/* Job Details - Mobile: Stack vertically, Desktop: Row */}
                     <div className="min-w-0 flex-1">
-                      <div className="lg:flex lg:items-center lg:gap-4">
+                      <div className="xl:flex xl:items-center xl:gap-4">
                         {/* Job Details - Left Column */}
-                        <div className="mb-2 min-w-0 flex-1 lg:mb-0">
-                          <h3 className="text-foreground text-sm font-semibold lg:text-sm">
+                        <div className="mb-2 min-w-0 flex-1 xl:mb-0">
+                          <h3 className="text-foreground text-sm font-semibold xl:text-sm">
                             {job.job_title}
                           </h3>
                           <p className="text-muted-foreground text-xs">
@@ -312,7 +312,7 @@ export default function JobListings({
                         </div>
 
                         {/* Location - Middle Column (Hidden on mobile) */}
-                        <div className="hidden min-w-0 flex-1 lg:block">
+                        <div className="hidden min-w-0 xl:block xl:w-48">
                           <p className="text-foreground text-sm font-medium">
                             {job.job_city}, {job.job_state}
                           </p>
@@ -322,20 +322,20 @@ export default function JobListings({
                         </div>
 
                         {/* Salary - Right Column */}
-                        <div className="flex-shrink-0 lg:text-right">
+                        <div className="flex-shrink-0 xl:w-32 xl:text-right">
                           <p className="text-foreground text-sm font-semibold">
                             {job.job_min_salary && job.job_max_salary
                               ? `$${job.job_min_salary} - $${job.job_max_salary}`
                               : 'N/A'}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            {job.job_salary_period}
+                            {job.job_salary_period || 'HOUR'}
                           </p>
                         </div>
                       </div>
 
                       {/* Mobile: Show location below */}
-                      <div className="text-muted-foreground mt-2 flex items-center gap-1 lg:hidden">
+                      <div className="text-muted-foreground mt-2 flex items-center gap-1 xl:hidden">
                         <MapPin className="h-3 w-3" />
                         <span className="text-xs">
                           {job.job_city}, {job.job_state}
@@ -344,7 +344,7 @@ export default function JobListings({
                     </div>
 
                     {/* Mobile: Chevron indicator */}
-                    <div className="lg:hidden">
+                    <div className="xl:hidden">
                       <ChevronRight className="text-muted-foreground h-4 w-4" />
                     </div>
                   </div>
@@ -375,14 +375,14 @@ export default function JobListings({
 
       {/* Right Panel - Job Details */}
       <div
-        className={`bg-background border-border flex w-full flex-col border-l p-4 lg:w-1/3 lg:overflow-scroll lg:p-6 ${showJobDetails ? 'flex' : 'hidden lg:flex'}`}
+        className={`bg-background border-border flex w-full flex-col border-l p-4 max-xl:mx-auto max-xl:max-w-[700px] max-xl:border-l-0 xl:w-1/3 xl:overflow-scroll xl:p-6 ${showJobDetails ? 'flex' : 'hidden xl:flex'}`}
       >
         {selectedJob ? (
           <>
             {/* Company Header */}
-            <div className="mb-4 border-b pt-6 pb-4 text-center lg:pt-12 lg:pb-5">
+            <div className="mb-4 border-b pt-6 pb-4 text-center xl:pt-12 xl:pb-5">
               <div
-                className="bg-muted mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg text-2xl lg:h-16 lg:w-16 lg:text-3xl"
+                className="bg-muted mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg text-2xl xl:h-16 xl:w-16 xl:text-3xl"
                 aria-hidden="true"
               >
                 {selectedJob.employer_logo ? (
@@ -396,7 +396,7 @@ export default function JobListings({
                   '🏢'
                 )}
               </div>
-              <h2 className="text-foreground text-lg font-bold lg:text-xl">
+              <h2 className="text-foreground text-lg font-bold xl:text-xl">
                 {selectedJob.employer_name}
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -405,7 +405,7 @@ export default function JobListings({
             </div>
 
             {/* Job Title with Location and Bookmark */}
-            <div className="mb-4 border-b pb-4 lg:mb-6">
+            <div className="mb-4 border-b pb-4 xl:mb-6">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-foreground pr-2 text-lg font-semibold">
                   {selectedJob.job_title}
@@ -428,11 +428,11 @@ export default function JobListings({
             </div>
 
             {/* Description */}
-            <div className="mb-4 lg:mb-6">
+            <div className="mb-4 xl:mb-6">
               <h4 className="text-foreground mb-3 font-semibold">
                 Description
               </h4>
-              <p className="text-muted-foreground line-clamp-4 text-xs leading-relaxed lg:text-xs">
+              <p className="text-muted-foreground line-clamp-4 text-xs leading-relaxed xl:text-xs">
                 {selectedJob.job_description}
               </p>
               <button className="text-primary focus:ring-ring mt-2 rounded text-sm font-medium hover:underline focus:ring-2 focus:outline-none">
@@ -440,17 +440,17 @@ export default function JobListings({
               </button>
             </div>
 
-            <hr className="border-border mb-4 lg:mb-6" />
+            <hr className="border-border mb-4 xl:mb-6" />
 
             {/* Job Highlights*/}
-            <div className="mb-4 flex-1 lg:mb-6">
+            <div className="mb-4 flex-1 xl:mb-6">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-foreground font-semibold">
                   Job Highlights
                 </h4>
               </div>
 
-              <div className="bg-muted/50 rounded-xl p-3 lg:p-4">
+              <div className="bg-muted/50 rounded-xl p-3 xl:p-4">
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     {selectedJob.job_highlights?.Qualifications && (
@@ -492,12 +492,12 @@ export default function JobListings({
               role="group"
               aria-label="Job actions"
             >
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 lg:py-3">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3">
                 Apply now
               </Button>
               <Button
                 variant="outline"
-                className="focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 lg:py-3"
+                className="focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3"
               >
                 Notify me
               </Button>
