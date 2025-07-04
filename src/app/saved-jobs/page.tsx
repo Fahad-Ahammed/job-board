@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSavedJobs } from '@/hooks/useSavedJobs';
+import { useAppliedJobs } from '@/hooks/useAppliedJobs';
 import { Job } from '@/types/jobs';
 import Image from 'next/image';
 import {
@@ -12,12 +13,15 @@ import {
   BookmarkX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ApplyJobModal from '@/components/jobs/ApplyJobModal';
 
 export default function SavedJobsPage() {
   const { savedJobs, toggleSaveJob, isLoading } = useSavedJobs();
+  const { isJobApplied, addAppliedJob } = useAppliedJobs();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   // Clear selected job if it's no longer in saved jobs
   useEffect(() => {
@@ -315,12 +319,17 @@ export default function SavedJobsPage() {
               role="group"
               aria-label="Job actions"
             >
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3">
-                Apply now
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3"
+                onClick={() => setIsApplyModalOpen(true)}
+                disabled={isJobApplied(selectedJob.job_id)}
+              >
+                {isJobApplied(selectedJob.job_id) ? 'Applied' : 'Apply now'}
               </Button>
               <Button
                 variant="outline"
                 className="focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3"
+                disabled={isJobApplied(selectedJob.job_id)}
               >
                 Notify me
               </Button>
@@ -339,6 +348,14 @@ export default function SavedJobsPage() {
           </div>
         )}
       </div>
+      {selectedJob && (
+        <ApplyJobModal
+          job={selectedJob}
+          isOpen={isApplyModalOpen}
+          onClose={() => setIsApplyModalOpen(false)}
+          onApply={addAppliedJob}
+        />
+      )}
     </div>
   );
 }

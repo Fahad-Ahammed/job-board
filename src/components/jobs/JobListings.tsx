@@ -13,8 +13,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useSavedJobs } from '@/hooks/useSavedJobs';
+import { useAppliedJobs } from '@/hooks/useAppliedJobs';
 import { fetchJobs } from '@/lib/api/jobs';
 import JobCardSkeleton from './JobCardSkeleton';
+import ApplyJobModal from './ApplyJobModal';
 
 interface JobListingsProps {
   initialJobs: Job[];
@@ -39,8 +41,10 @@ export default function JobListings({
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   const { isJobSaved, toggleSaveJob } = useSavedJobs();
+  const { isJobApplied, addAppliedJob } = useAppliedJobs();
 
   const loadMoreJobs = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -521,12 +525,17 @@ export default function JobListings({
               role="group"
               aria-label="Job actions"
             >
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3">
-                Apply now
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3"
+                onClick={() => setIsApplyModalOpen(true)}
+                disabled={isJobApplied(selectedJob.job_id)}
+              >
+                {isJobApplied(selectedJob.job_id) ? 'Applied' : 'Apply now'}
               </Button>
               <Button
                 variant="outline"
                 className="focus:ring-ring flex-1 rounded-lg py-2.5 font-medium focus:ring-2 focus:ring-offset-2 xl:py-3"
+                disabled={isJobApplied(selectedJob.job_id)}
               >
                 Notify me
               </Button>
@@ -567,6 +576,12 @@ export default function JobListings({
           </div>
         )}
       </div>
+      <ApplyJobModal
+        job={selectedJob}
+        isOpen={isApplyModalOpen}
+        onClose={() => setIsApplyModalOpen(false)}
+        onApply={addAppliedJob}
+      />
     </div>
   );
 }
