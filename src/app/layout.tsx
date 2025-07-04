@@ -11,7 +11,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Title',
+  title: 'Wayhire',
   description: 'Description',
   icons: {
     icon: '/favicon.ico',
