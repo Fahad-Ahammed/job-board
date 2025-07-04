@@ -37,6 +37,7 @@ export default function JobListings({
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const loadMoreJobs = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -278,6 +279,7 @@ export default function JobListings({
                   onClick={() => {
                     setSelectedJob(job);
                     setShowJobDetails(true); // Show details on mobile
+                    setIsDescriptionExpanded(false); // Reset description state
                   }}
                 >
                   <div className="flex items-center gap-3 xl:gap-4">
@@ -432,11 +434,22 @@ export default function JobListings({
               <h4 className="text-foreground mb-3 font-semibold">
                 Description
               </h4>
-              <p className="text-muted-foreground line-clamp-4 text-xs leading-relaxed xl:text-xs">
-                {selectedJob.job_description}
-              </p>
-              <button className="text-primary focus:ring-ring mt-2 rounded text-sm font-medium hover:underline focus:ring-2 focus:outline-none">
-                Read more
+              <div
+                className={`relative overflow-hidden transition-all duration-300 ease-in-out ${
+                  isDescriptionExpanded
+                    ? 'max-h-[2000px]'
+                    : 'line-clamp-4 max-h-20'
+                }`}
+              >
+                <p className="text-muted-foreground text-xs leading-relaxed xl:text-xs">
+                  {selectedJob.job_description}
+                </p>
+              </div>
+              <button
+                className="text-primary mt-2 cursor-pointer rounded text-sm font-medium transition-colors duration-200 hover:text-white hover:underline focus:outline-none"
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              >
+                {isDescriptionExpanded ? 'Read less' : 'Read more'}
               </button>
             </div>
 
